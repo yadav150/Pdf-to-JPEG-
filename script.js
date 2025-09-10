@@ -1,4 +1,6 @@
+// Ensure DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+  // Set PDF.js worker
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.12.313/pdf.worker.min.js';
 
   const pdfInput = document.getElementById('pdfFile');
@@ -18,24 +20,27 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function convertPDF(file) {
-    result.innerHTML = 'Processing PDF...';
+    result.textContent = 'Processing PDF...';
+
     const reader = new FileReader();
 
     reader.onload = async function(e) {
       try {
         const typedarray = new Uint8Array(e.target.result);
-        const pdfDoc = await pdfjsLib.getDocument(typedarray).promise;
-        result.innerHTML = '';
+        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
 
-        for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-          const page = await pdfDoc.getPage(pageNum);
+        result.innerHTML = ''; // Clear previous results
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
           const viewport = page.getViewport({ scale: 2 });
           const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
           canvas.width = viewport.width;
           canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
 
           await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
           result.appendChild(canvas);
 
           const link = document.createElement('a');
@@ -46,13 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
           result.appendChild(link);
         }
 
+        // Update button for reset
         btn.textContent = 'Reset';
         btn.classList.add('reset');
         btn.dataset.mode = 'reset';
-
       } catch (err) {
         console.error(err);
-        result.textContent = '⚠ Error processing PDF. Make sure it is a valid PDF file.';
+        result.textContent = '⚠ Error processing PDF. Try a different file.';
       }
     };
 
@@ -65,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function resetAll() {
     pdfInput.value = '';
-    result.innerHTML = 'Upload a PDF and click Convert to see JPEG images here.';
+    result.textContent = 'Upload a PDF and click Convert to see JPEG images here.';
     btn.textContent = 'Convert to JPEG';
     btn.classList.remove('reset');
     delete btn.dataset.mode;
