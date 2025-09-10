@@ -6,7 +6,7 @@ const btn = document.getElementById('convertBtn');
 const result = document.getElementById('result');
 
 btn.addEventListener('click', () => {
-  if(btn.dataset.mode === 'reset') {
+  if (btn.dataset.mode === 'reset') {
     resetAll();
   } else {
     if (!pdfInput.files[0]) {
@@ -19,25 +19,23 @@ btn.addEventListener('click', () => {
 
 async function convertPDF(file) {
   result.innerHTML = 'Processing PDF...';
-
   const reader = new FileReader();
 
   reader.onload = async function(e) {
     try {
       const typedarray = new Uint8Array(e.target.result);
-      const pdf = await pdfjsLib.getDocument({data: typedarray}).promise;
-
+      const pdfDoc = await pdfjsLib.getDocument(typedarray).promise;
       result.innerHTML = '';
 
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
+      for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+        const page = await pdfDoc.getPage(pageNum);
         const viewport = page.getViewport({ scale: 2 });
         const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d');
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
+        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
         result.appendChild(canvas);
 
         const link = document.createElement('a');
