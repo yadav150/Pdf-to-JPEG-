@@ -1,6 +1,4 @@
-// Ensure DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  // Set PDF.js worker
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.12.313/pdf.worker.min.js';
 
   const pdfInput = document.getElementById('pdfFile');
@@ -21,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function convertPDF(file) {
     result.textContent = 'Processing PDF...';
-
     const reader = new FileReader();
 
     reader.onload = async function(e) {
@@ -29,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const typedarray = new Uint8Array(e.target.result);
         const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
 
-        result.innerHTML = ''; // Clear previous results
+        result.innerHTML = '';
 
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
@@ -51,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
           result.appendChild(link);
         }
 
-        // Update button for reset
         btn.textContent = 'Reset';
         btn.classList.add('reset');
         btn.dataset.mode = 'reset';
