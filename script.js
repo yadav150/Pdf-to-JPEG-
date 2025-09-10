@@ -1,3 +1,6 @@
+// Set PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.12.313/pdf.worker.min.js';
+
 const pdfInput = document.getElementById('pdfFile');
 const btn = document.getElementById('convertBtn');
 const result = document.getElementById('result');
