@@ -19,38 +19,50 @@ btn.addEventListener('click', () => {
 
 async function convertPDF(file) {
   result.innerHTML = 'Processing PDF...';
-  const fileReader = new FileReader();
-  fileReader.onload = async function() {
-    const typedarray = new Uint8Array(this.result);
-    const loadingTask = pdfjsLib.getDocument({data: typedarray});
-    const pdf = await loadingTask.promise;
 
-    result.innerHTML = '';
+  const reader = new FileReader();
 
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const viewport = page.getViewport({ scale: 2 });
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+  reader.onload = async function(e) {
+    try {
+      const typedarray = new Uint8Array(e.target.result);
+      const pdf = await pdfjsLib.getDocument({data: typedarray}).promise;
 
-      await page.render({ canvasContext: context, viewport: viewport }).promise;
-      result.appendChild(canvas);
+      result.innerHTML = '';
 
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/jpeg');
-      link.download = `page-${pageNum}.jpeg`;
-      link.textContent = `Download Page ${pageNum} as JPEG`;
-      link.className = 'download-link';
-      result.appendChild(link);
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+        result.appendChild(canvas);
+
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/jpeg');
+        link.download = `page-${pageNum}.jpeg`;
+        link.textContent = `Download Page ${pageNum} as JPEG`;
+        link.className = 'download-link';
+        result.appendChild(link);
+      }
+
+      btn.textContent = 'Reset';
+      btn.classList.add('reset');
+      btn.dataset.mode = 'reset';
+
+    } catch (err) {
+      console.error(err);
+      result.textContent = '⚠ Error processing PDF. Make sure it is a valid PDF file.';
     }
-
-    btn.textContent = 'Reset';
-    btn.classList.add('reset');
-    btn.dataset.mode = 'reset';
   };
-  fileReader.readAsArrayBuffer(file);
+
+  reader.onerror = function() {
+    result.textContent = '⚠ Error reading file.';
+  };
+
+  reader.readAsArrayBuffer(file);
 }
 
 function resetAll() {
